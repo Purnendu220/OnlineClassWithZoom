@@ -3,6 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 
 import { ZoomMtg } from '@zoomus/websdk';
+import { ApiService } from './httpwrapper/api.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { HttpSuccesFailureResponse } from './httpwrapper/http-success-fail-listener';
+import { ApiConstants } from './httpwrapper/app-constant.service';
+import { LocalStorageService } from './httpwrapper/localstorage.service';
+import { CourseModel } from './models/course.model';
 
 ZoomMtg.preLoadWasm();
 ZoomMtg.prepareJssdk();
@@ -12,33 +18,61 @@ ZoomMtg.prepareJssdk();
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit,HttpSuccesFailureResponse {
 
   // setup your signature endpoint here: https://github.com/zoom/websdk-sample-signature-node.js
   //signatureEndpoint = 'http://localhost:4000'
   apiKey = 'ThjiOETBSr6TGTSZ2NdYWA'
   apiSecret =  'xELagy0IqWra64TDFB7iaU0hy4L0ocCozG5v'
-  meetingNumber;
-  //meetingNumber = 97506194511
   role = 1
   leaveUrl = 'http://localhost:4200'
-  userName = 'Test User'
-  userEmail = 'purendu220@gmail.com'
-  passWord;
-  //passWord = '163098'
 
-  constructor(public httpClient: HttpClient, @Inject(DOCUMENT) document) {
+authToken;
+userId;
+courseId;
+courseDetail:CourseModel;
+private sub: any;
 
+  constructor(private apiService:ApiService, @Inject(DOCUMENT) document,private route: ActivatedRoute,private router:Router) {
+
+  }
+  onSuccess(type: any, responsedata: any) {
+    switch(type){
+      case ApiConstants.courseDetailApi:
+        this.courseDetail = responsedata.data;
+        this.getSignature();
+        break
+      case ApiConstants.findUserApi:
+        LocalStorageService.setUserData(responsedata.data);
+        this.apiService.getCourseDetail(this.courseId,this);
+
+        break
+
+    }
+    
+  }
+  onFailure(type: any, response: any) {
+    switch(type){
+      case ApiConstants.courseDetailApi:
+        case ApiConstants.findUserApi:
+        break
+    }
   }
 
   ngOnInit() {
-
+    this.sub = this.route.params.subscribe(params => {
+    this.userId = params['id'];
+    this.courseId = params['courseId'];
+    this.authToken = params['token'];
+    this.role = params['role'];
+    LocalStorageService.setAuthToken(this.authToken);
+     this.apiService.getFindUser(this);
+  });
   }
 
   getSignature() {
-    if(this.meetingNumber&&this.meetingNumber+"".length>0&&this.passWord&&this.passWord+"".length>0){
       ZoomMtg.generateSignature({
-        meetingNumber: this.meetingNumber,
+        meetingNumber: this.courseDetail.meeting.meeting_id,
         apiKey: this.apiKey,
         apiSecret: this.apiSecret,
         role: this.role,
@@ -48,9 +82,7 @@ export class AppComponent implements OnInit {
   
         }
       });
-    }else{
-      alert("Meeting ID and Password is required");
-    }
+   
  
 
   }
@@ -67,11 +99,11 @@ export class AppComponent implements OnInit {
 
         ZoomMtg.join({
           signature: signature,
-          meetingNumber: this.meetingNumber,
-          userName: this.userName,
+          meetingNumber: this.courseDetail.meeting.meeting_id,
+          userName: LocalStorageService.getUserData().name,
           apiKey: this.apiKey,
-          userEmail: this.userEmail,
-          passWord: this.passWord,
+          userEmail: LocalStorageService.getUserData().email,
+          passWord: this.courseDetail.meeting.meeting_password,
           success: (success) => {
             console.log(success)
           },
@@ -86,4 +118,9 @@ export class AppComponent implements OnInit {
       }
     })
   }
+ onDestroy(){
+  
+
+ }
+
 }

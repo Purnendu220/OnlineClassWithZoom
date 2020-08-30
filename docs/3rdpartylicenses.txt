@@ -35,6 +35,9 @@ MIT
 @angular/platform-browser
 MIT
 
+@angular/router
+MIT
+
 @zoomus/websdk
 MIT
 # Zoom Video Communications - Web SDK LICENSE AGREEMENT
