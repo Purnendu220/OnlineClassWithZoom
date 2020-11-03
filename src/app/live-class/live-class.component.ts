@@ -2,7 +2,6 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 
-import { ZoomMtg } from '@zoomus/websdk';
 import { HttpSuccesFailureResponse } from '../httpwrapper/http-success-fail-listener';
 import { ApiService } from '../httpwrapper/api.service';
 import { CourseModel } from '../models/course.model';
@@ -11,7 +10,7 @@ import { ApiConstants } from '../httpwrapper/app-constant.service';
 import { LocalStorageService } from '../httpwrapper/localstorage.service';
 import { environment } from 'src/environments/environment';
 declare var $: any; 
-
+declare var ZoomMtg:any;
 
 ZoomMtg.preLoadWasm();
 ZoomMtg.prepareJssdk();
@@ -38,7 +37,7 @@ private sub: any;
     switch(type){
       case ApiConstants.courseDetailApi:
         this.courseDetail = responsedata.data;
-        this.leaveUrl = environment.courseDetailUrl+"/"+this.courseId;
+        this.leaveUrl = environment.courseDetailUrl+"/"+this.courseId+"?rateCourse=true";
         this.getSignature();
         break
       case ApiConstants.findUserApi:
@@ -95,7 +94,7 @@ private sub: any;
       isSupportAV: true,
       showMeetingHeader: false, //option
       disableInvite:true,
-      isSupportChat: false, //optional,
+      isSupportChat: true, //optional,
       disableRecord: true, //optional
       screenShare: this.role ==1?true:false,
 
@@ -143,13 +142,17 @@ private sub: any;
   }
   manageMeetingEndAlert(){
     setTimeout(() => {
-      ZoomMtg.leaveMeeting({});
+     // ZoomMtg.leaveMeeting({});
 
     }, 15000);
   }
 
   endMeeting(){
-    ZoomMtg.endMeeting({});
+    if(LocalStorageService.getUserData().userType=="TEACHER"){
+      this.apiService.courseFinish(this.courseId,this);
+  
+     }    
+     ZoomMtg.endMeeting({});
   }
 
   setListenerForZoomMeeting(){
@@ -171,7 +174,11 @@ private sub: any;
     });
   }
  onDestroy(){
-  
+   if(LocalStorageService.getUserData().userType=="TEACHER"){
+    this.apiService.courseFinish(this.courseId,this);
+
+   }
+   ZoomMtg.endMeeting({});
 
  }
 

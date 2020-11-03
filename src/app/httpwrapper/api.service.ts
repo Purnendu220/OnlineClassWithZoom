@@ -425,4 +425,26 @@ return this.httpClient.post(this.SERVER_URL+"signature",request,{ headers: heade
           //headers.set('x-auth',token+"");
     
    }
+   public courseFinish(courseId,callback:HttpSuccesFailureResponse,SubCategoryId?){ 
+    let token=LocalStorageService.getAuthToken();
+    
+    const headers = new HttpHeaders({'Content-Type':'application/json; charset=utf-8','x-auth': token+"" });
+    let request ={"courseId": courseId}
+         return this.httpClient.post(this.SERVER_URL+"finish-course",request,{ headers: headers}).subscribe(data=>{
+             callback.onSuccess(ApiConstants.courseFinishApi,data);
+            
+       },error=>{
+          callback.onFailure(ApiConstants.courseFinishApi,error)
+   
+       }); 
+       
+       
+           
+          
+     //const headers = new HttpHeaders({'Content-Type':'application/json; charset=utf-8' });
+    // headers.append('Authorization',token+"");
+ 
+          //headers.set('x-auth',token+"");
+    
+   }
 }

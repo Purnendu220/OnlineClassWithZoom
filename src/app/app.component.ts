@@ -2,7 +2,6 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 
-import { ZoomMtg } from '@zoomus/websdk';
 import { ApiService } from './httpwrapper/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpSuccesFailureResponse } from './httpwrapper/http-success-fail-listener';
@@ -10,8 +9,6 @@ import { ApiConstants } from './httpwrapper/app-constant.service';
 import { LocalStorageService } from './httpwrapper/localstorage.service';
 import { CourseModel } from './models/course.model';
 
-ZoomMtg.preLoadWasm();
-ZoomMtg.prepareJssdk();
 
 @Component({
   selector: 'app-root',
@@ -40,7 +37,6 @@ private sub: any;
     switch(type){
       case ApiConstants.courseDetailApi:
         this.courseDetail = responsedata.data;
-        this.getSignature();
         break
       case ApiConstants.findUserApi:
         LocalStorageService.setUserData(responsedata.data);
@@ -70,54 +66,7 @@ private sub: any;
   });
   }
 
-  getSignature() {
-      ZoomMtg.generateSignature({
-        meetingNumber: this.courseDetail.meeting.meeting_id,
-        apiKey: this.apiKey,
-        apiSecret: this.apiSecret,
-        role: this.role,
-        success: (res) => {
-          console.log(res.result);
-          this.startMeeting(res.result)
-  
-        }
-      });
-   
- 
 
-  }
-
-  startMeeting(signature) {
-
-    document.getElementById('zmmtg-root').style.display = 'block'
-
-    ZoomMtg.init({
-      leaveUrl: this.leaveUrl,
-      isSupportAV: true,
-      success: (success) => {
-        console.log(success)
-
-        ZoomMtg.join({
-          signature: signature,
-          meetingNumber: this.courseDetail.meeting.meeting_id,
-          userName: LocalStorageService.getUserData().name,
-          apiKey: this.apiKey,
-          userEmail: LocalStorageService.getUserData().email,
-          passWord: this.courseDetail.meeting.meeting_password,
-          success: (success) => {
-            console.log(success)
-          },
-          error: (error) => {
-            console.log(error)
-          }
-        })
-
-      },
-      error: (error) => {
-        console.log(error)
-      }
-    })
-  }
  onDestroy(){
   
 
