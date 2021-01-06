@@ -17,7 +17,7 @@ const absoluteURLPattern = /^((?:https:\/\/)|(?:http:\/\/)|(?:www))/;
   providedIn: 'root'
 })
 export class ApiService {
-  public SERVER_URL = "http://66.42.50.129:7000/api/v1/";
+  public SERVER_URL = "http://yocolabapi.ebslon.com:7000/api/v1/";
 
   constructor(private httpClient: HttpClient) { }
 

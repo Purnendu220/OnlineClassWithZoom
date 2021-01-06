@@ -37,7 +37,14 @@ private sub: any;
     switch(type){
       case ApiConstants.courseDetailApi:
         this.courseDetail = responsedata.data;
-        this.leaveUrl = environment.courseDetailUrl+"/"+this.courseId+"?rateCourse=true";
+        if(LocalStorageService.getUserData().userType=="TEACHER"){
+          this.leaveUrl = environment.courseDetailUrl+"/"+this.courseId;
+
+        }else{
+          this.leaveUrl = environment.courseDetailUrl+"/"+this.courseId+"?rateCourse=true";
+
+        }
+
         this.getSignature();
         break
       case ApiConstants.findUserApi:
@@ -178,6 +185,7 @@ private sub: any;
     this.apiService.courseFinish(this.courseId,this);
 
    }
+   ZoomMtg.leave();
    ZoomMtg.endMeeting({});
 
  }
